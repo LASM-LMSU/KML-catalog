@@ -10,6 +10,11 @@ const XML = new XMLParser({
 
 const EARTH_RADIUS_METERS = 6_378_137;
 const IGNORED_DIRS = new Set([".git", ".github", "dist", "node_modules", "public"]);
+const PREFERRED_BATCHES_DIR = ["data", "batches"];
+
+function isDirectory(path) {
+  return existsSync(path) && statSync(path).isDirectory();
+}
 
 /**
  * @typedef {[number, number]} Coordinate
@@ -239,6 +244,14 @@ function collectKmlFiles(rootDir, currentDir, files) {
 export function discoverKmlFiles(rootDir) {
   /** @type {string[]} */
   const files = [];
+  const batchesDir = join(rootDir, ...PREFERRED_BATCHES_DIR);
+
+  if (isDirectory(batchesDir)) {
+    collectKmlFiles(rootDir, batchesDir, files);
+
+    return files.sort((left, right) => left.localeCompare(right));
+  }
+
   collectKmlFiles(rootDir, rootDir, files);
   return files.sort((left, right) => left.localeCompare(right));
 }

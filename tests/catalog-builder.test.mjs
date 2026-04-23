@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildCatalog, getAreaKm2, parseCatalogFilename, parseKmlContent, parseLatLonQuad } from "../scripts/lib/catalog-builder.mjs";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { buildCatalog, discoverKmlFiles, getAreaKm2, parseCatalogFilename, parseKmlContent, parseLatLonQuad } from "../scripts/lib/catalog-builder.mjs";
 
 test("parseCatalogFilename extracts quicklook metadata", () => {
   const parsed = parseCatalogFilename("KFKA_0069_0307_0001_04450_1_04450_33_01_SAR-2A_251224_190735_ql");
@@ -65,4 +68,34 @@ test("buildCatalog supports empty kml sets", () => {
   assert.deepEqual(catalog.bounds, [0, 0, 0, 0]);
   assert.equal(catalog.stats.latestAcquiredOn, null);
   assert.equal(catalog.stats.earliestAcquiredOn, null);
+});
+
+
+test("discoverKmlFiles prefers data/batches path when present", () => {
+  const root = mkdtempSync(join(tmpdir(), "kml-catalog-"));
+  const batchDir = join(root, "data", "batches", "2025-12-29");
+  const legacyDir = join(root, "legacy");
+
+  mkdirSync(batchDir, { recursive: true });
+  mkdirSync(legacyDir, { recursive: true });
+
+  writeFileSync(join(batchDir, "KFKA_0069_0307_0001_04450_1_04450_33_01_SAR-2A_251224_190735_ql.kml"), "<kml />");
+  writeFileSync(join(legacyDir, "KFKA_0069_0307_0001_04450_1_04450_33_01_SAR-2A_251224_190735_ql.kml"), "<kml />");
+
+  const files = discoverKmlFiles(root);
+
+  assert.equal(files.length, 1);
+  assert.equal(files[0], "data/batches/2025-12-29/KFKA_0069_0307_0001_04450_1_04450_33_01_SAR-2A_251224_190735_ql.kml");
+});
+
+test("discoverKmlFiles falls back to full repository scan when data/batches is missing", () => {
+  const root = mkdtempSync(join(tmpdir(), "kml-catalog-"));
+  const legacyDir = join(root, "legacy");
+
+  mkdirSync(legacyDir, { recursive: true });
+  writeFileSync(join(legacyDir, "KFKA_0069_0307_0001_04450_1_04450_33_01_SAR-2A_251224_190735_ql.kml"), "<kml />");
+
+  const files = discoverKmlFiles(root);
+
+  assert.deepEqual(files, ["legacy/KFKA_0069_0307_0001_04450_1_04450_33_01_SAR-2A_251224_190735_ql.kml"]);
 });
