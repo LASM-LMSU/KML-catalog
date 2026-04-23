@@ -18,7 +18,6 @@ type TimelineBin = {
   activeCount: number;
   count: number;
   end: number;
-  ids: string[];
   label: string;
   start: number;
 };
@@ -216,6 +215,36 @@ function formatPeriod(period: CatalogTimePeriod) {
   return `${dateFormatter.format(leftDate)} - ${dateFormatter.format(rightDate)}`;
 }
 
+function formatSceneCount(value: number) {
+  const mod10 = value % 10;
+  const mod100 = value % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return `${value} снимок`;
+  }
+
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return `${value} снимка`;
+  }
+
+  return `${value} снимков`;
+}
+
+function formatPeriodCount(value: number) {
+  const mod10 = value % 10;
+  const mod100 = value % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return `${value} период`;
+  }
+
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return `${value} периода`;
+  }
+
+  return `${value} периодов`;
+}
+
 function isSamePeriod(left: CatalogTimePeriod, right: CatalogTimePeriod) {
   return normalizeInput(left.start) === normalizeInput(right.start) && normalizeInput(left.end, true) === normalizeInput(right.end, true);
 }
@@ -246,7 +275,6 @@ function buildTimeline(records: CatalogRecord[], activeIds: ReadonlySet<string>)
     if (existing) {
       existing.count += 1;
       existing.activeCount += activeIds.has(record.id) ? 1 : 0;
-      existing.ids.push(record.id);
       return;
     }
 
@@ -254,7 +282,6 @@ function buildTimeline(records: CatalogRecord[], activeIds: ReadonlySet<string>)
       activeCount: activeIds.has(record.id) ? 1 : 0,
       count: 1,
       end,
-      ids: [record.id],
       label: formatBucket(start, end, unit),
       start,
     });
@@ -280,6 +307,7 @@ export function Timeline({
 }: TimelineProps) {
   const [draftStart, setDraftStart] = useState("");
   const [draftEnd, setDraftEnd] = useState("");
+  const [hoveredBinStart, setHoveredBinStart] = useState<number | null>(null);
   const activeIds = new Set(activeRecords.map((record) => record.id));
   const timeline = buildTimeline(records, activeIds);
   const hasTimeFilter = filters.timePeriods.length > 0 || Boolean(filters.dateFrom || filters.dateTo);
@@ -323,6 +351,14 @@ export function Timeline({
     { label: formatAxisLabel(axisMiddle, timeline.unit), left: 50 },
     { label: formatAxisLabel(timeline.domainEnd - 1000, timeline.unit), left: 100 },
   ];
+  const hoveredBin = hoveredBinStart !== null ? timeline.bins.find((bin) => bin.start === hoveredBinStart) ?? null : null;
+  const timelineHint = hoveredBin
+    ? `${hoveredBin.label} · ${formatSceneCount(hoveredBin.count)}`
+    : filters.timePeriods.length
+      ? `${formatPeriodCount(filters.timePeriods.length)} выбрано`
+      : hasTimeFilter
+        ? "Активен диапазон дат из фильтров"
+      : "Наведите на столбец или кликните для фильтрации";
 
   return (
     <section className="timeline-panel panel-chrome">
@@ -346,6 +382,9 @@ export function Timeline({
         </div>
 
         <div className="timeline-scale">
+          <div className={`timeline-hover-readout${hoveredBin ? " is-active" : ""}`}>
+            {timelineHint}
+          </div>
           <div
             className={`timeline-bars${hasTimeFilter ? " has-time-filter" : ""}`}
             aria-label="Доступные даты съемки"
@@ -372,6 +411,10 @@ export function Timeline({
                   className={`timeline-bar${isActive ? " is-active" : ""}${hasTimeFilter && !isActive ? " is-muted" : ""}`}
                   type="button"
                   style={style}
+                  onMouseEnter={() => setHoveredBinStart(bin.start)}
+                  onMouseLeave={() => setHoveredBinStart(null)}
+                  onFocus={() => setHoveredBinStart(bin.start)}
+                  onBlur={() => setHoveredBinStart((current) => (current === bin.start ? null : current))}
                   onClick={() => {
                     if (isExactActive) {
                       onClearTime();
@@ -382,9 +425,7 @@ export function Timeline({
                   }}
                   title={`${bin.label}: ${bin.count} снимков. Нажмите, чтобы отфильтровать.`}
                   aria-label={`${bin.label}: ${bin.count} снимков`}
-                >
-                  <span>{bin.count}</span>
-                </button>
+                />
               );
             })}
           </div>
@@ -401,6 +442,12 @@ export function Timeline({
         </div>
 
         <div className="timeline-periods-panel">
+          <div className="timeline-periods-header">
+            <span className="timeline-periods-title">Периоды</span>
+            {filters.timePeriods.length ? (
+              <span className="timeline-periods-count">{filters.timePeriods.length}</span>
+            ) : null}
+          </div>
           <div className="timeline-periods">
             {filters.timePeriods.length ? (
               filters.timePeriods.map((period, index) => (
