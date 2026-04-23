@@ -1354,72 +1354,108 @@ button:disabled {
   }
 
   .hud {
-    top: calc(12px + var(--safe-top));
-    left: calc(12px + var(--safe-left));
-    right: calc(12px + var(--safe-right));
-    padding: 12px;
+    top: calc(10px + var(--safe-top));
+    left: calc(10px + var(--safe-left));
+    right: calc(10px + var(--safe-right));
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .hud-brand {
+    gap: 10px;
+  }
+
+  .brand-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 1.2rem;
   }
 
   .brand-copy strong {
-    font-size: 1.15rem;
+    font-size: 1.02rem;
   }
 
-  .brand-copy span,
-  .hud-pill-wide {
-    white-space: normal;
+  .brand-copy span {
+    font-size: 0.85rem;
+  }
+
+  .hud-search,
+  .hud-search input {
+    min-height: 44px;
+  }
+
+  .hud-pills {
+    gap: 6px;
+  }
+
+  .hud-pill {
+    min-height: 32px;
+    font-size: 0.76rem;
+  }
+
+  .hud-pill:nth-child(n + 2) {
+    display: none;
   }
 
   .map-toolbar {
-    left: calc(12px + var(--safe-left));
-    right: calc(12px + var(--safe-right));
-    bottom: calc(164px + var(--safe-bottom));
+    left: calc(10px + var(--safe-left));
+    right: calc(10px + var(--safe-right));
+    bottom: calc(78px + var(--safe-bottom));
     top: auto;
     z-index: 21;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
-    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px;
   }
 
   .toolbar-segmented {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-column: auto;
+    display: inline-flex;
+    flex-direction: row;
     border-bottom: 0;
     padding-bottom: 0;
+    flex: 0 0 auto;
+    gap: 8px;
   }
 
   .segmented-button {
-    width: 100%;
+    width: auto;
+    min-width: 98px;
+    min-height: 40px;
   }
 
   .map-toolbar .toolbar-button {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .toolbar-button {
-    min-width: 0;
-    padding: 0 10px;
+    width: auto;
+    min-width: 44px;
+    flex: 0 0 auto;
+    padding: 0 12px;
   }
 
   .toolbar-label {
-    font-size: 0.82rem;
+    display: none;
+  }
+
+  .toolbar-button {
+    min-height: 40px;
+    border-radius: 14px;
   }
 
   .selection-context {
-    left: calc(12px + var(--safe-left));
-    right: calc(12px + var(--safe-right));
-    bottom: calc(228px + var(--safe-bottom));
+    left: calc(10px + var(--safe-left));
+    right: calc(10px + var(--safe-right));
+    bottom: calc(168px + var(--safe-bottom));
     width: auto;
     flex-direction: column;
     align-items: stretch;
   }
 
   .timeline-panel {
-    left: calc(12px + var(--safe-left));
-    right: calc(12px + var(--safe-right));
-    bottom: calc(12px + var(--safe-bottom));
+    left: calc(10px + var(--safe-left));
+    right: calc(10px + var(--safe-right));
+    bottom: calc(10px + var(--safe-bottom));
     padding: 14px 50px 10px 10px;
     border-radius: 22px;
   }
@@ -1523,11 +1559,11 @@ button:disabled {
   }
 
   .app-shell.is-timeline-collapsed .map-toolbar {
-    bottom: calc(88px + var(--safe-bottom));
+    bottom: calc(12px + var(--safe-bottom));
   }
 
   .app-shell.is-timeline-collapsed .selection-context {
-    bottom: calc(152px + var(--safe-bottom));
+    bottom: calc(92px + var(--safe-bottom));
   }
 
   .drawer {
