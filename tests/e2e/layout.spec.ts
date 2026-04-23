@@ -28,6 +28,8 @@ test("мобильная раскладка помещается на iPhone 12 
   await expect(page.getByRole("button", { name: "Сбросить скрытие" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Показать выборку" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Скрыть выборку" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Показать отмеченные" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Скрыть отмеченные" })).toBeVisible();
   await expectNodeFitsWidth(page, ".list-bulk-actions");
 });
 
@@ -49,4 +51,23 @@ test("стандартный сценарий: фильтрация, списо�
 
   await expect(page.getByText("Карточка записи")).toBeVisible();
   await expect(page.getByRole("link", { name: /Скачать KML/i })).toBeVisible();
+});
+
+test("bulk-операции по отмеченным строкам работают в списке", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Список" }).click();
+  const firstCheckbox = page.locator(".record-row-select input").first();
+  await expect(firstCheckbox).toBeVisible();
+  await firstCheckbox.check();
+
+  await expect(page.getByText(/Отмечено 1 из/i)).toBeVisible();
+  await page.getByRole("button", { name: "Скрыть отмеченные" }).click();
+  await expect(page.locator(".record-row.is-hidden").first()).toBeVisible();
+
+  await page.getByRole("button", { name: "Показать отмеченные" }).click();
+  await expect(page.locator(".record-row.is-hidden")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Снять выделение" }).click();
+  await expect(page.getByText(/Отмечено 0 из/i)).toBeVisible();
 });

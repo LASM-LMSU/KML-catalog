@@ -7,7 +7,7 @@ import { CalendarIcon, CloseIcon, DownloadIcon, FilterIcon, FocusIcon, InfoIcon,
 import { loadCatalog } from "./lib/catalog";
 import { filterRecords, isDefaultFilters } from "./lib/filtering";
 import { formatDate, formatGeneratedAt } from "./lib/format";
-import type { BBox, CatalogData, CatalogFilters } from "./types";
+import type { BBox, CatalogData, CatalogFilters, CatalogRecord } from "./types";
 
 const DEFAULT_FILTERS: CatalogFilters = {
   query: "",
@@ -59,6 +59,17 @@ function getActiveFilterCount(filters: CatalogFilters) {
   return count;
 }
 
+function downloadRecordFiles(records: CatalogRecord[]) {
+  records.forEach((record) => {
+    const link = document.createElement("a");
+    link.href = `./${encodeURI(record.sitePath)}`;
+    link.download = record.sitePath.split("/").pop() ?? `${record.id}.kml`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+  });
+}
+
 type ToolbarButtonProps = {
   active?: boolean;
   badge?: number | string;
@@ -91,6 +102,7 @@ export default function App() {
   const [basemap, setBasemap] = useState<"light" | "satellite">("light");
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
+  const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(() => new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [visibleBounds, setVisibleBounds] = useState<BBox | null>(null);
@@ -127,6 +139,28 @@ export default function App() {
   const effectiveFilters = { ...filters, query: deferredQuery };
   const matchedRecords = catalog ? filterRecords(catalog.records, effectiveFilters, visibleBounds) : [];
   const visibleRecords = matchedRecords.filter((record) => !hiddenIds.has(record.id));
+
+  useEffect(() => {
+    setBulkSelectedIds((current) => {
+      if (!current.size) {
+        return current;
+      }
+
+      const matchedIds = new Set(matchedRecords.map((record) => record.id));
+      let changed = false;
+      const next = new Set<string>();
+
+      current.forEach((id) => {
+        if (matchedIds.has(id)) {
+          next.add(id);
+        } else {
+          changed = true;
+        }
+      });
+
+      return changed ? next : current;
+    });
+  }, [matchedRecords]);
 
   useEffect(() => {
     if (!matchedRecords.length) {
@@ -178,6 +212,9 @@ export default function App() {
     label: value === "unspecified" ? "без даты" : value,
   }));
   const activeFilterCount = getActiveFilterCount(filters);
+  const bulkSelectedRecords = matchedRecords.filter((record) => bulkSelectedIds.has(record.id));
+  const bulkSelectedCount = bulkSelectedRecords.length;
+  const allMatchedSelected = matchedRecords.length > 0 && bulkSelectedCount === matchedRecords.length;
   const hideMatched = () => {
     const ids = matchedRecords.map((record) => record.id);
     setHiddenIds((current) => {
@@ -199,6 +236,62 @@ export default function App() {
   };
   const showAllCatalog = () => {
     setHiddenIds(new Set());
+  };
+  const clearBulkSelection = () => {
+    setBulkSelectedIds(new Set());
+  };
+  const toggleBulkSelected = (id: string) => {
+    setBulkSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+  const toggleAllMatchedSelected = () => {
+    if (allMatchedSelected) {
+      setBulkSelectedIds(new Set());
+      return;
+    }
+
+    setBulkSelectedIds(new Set(matchedRecords.map((record) => record.id)));
+  };
+  const hideBulkSelected = () => {
+    if (!bulkSelectedCount) {
+      return;
+    }
+
+    const ids = bulkSelectedRecords.map((record) => record.id);
+    setHiddenIds((current) => {
+      const next = new Set(current);
+      ids.forEach((id) => next.add(id));
+      return next;
+    });
+
+    if (selectedId && ids.includes(selectedId)) {
+      setSelectedId(null);
+    }
+  };
+  const showBulkSelected = () => {
+    if (!bulkSelectedCount) {
+      return;
+    }
+
+    setHiddenIds((current) => {
+      const next = new Set(current);
+      bulkSelectedRecords.forEach((record) => next.delete(record.id));
+      return next;
+    });
+  };
+  const downloadBulkSelected = () => {
+    if (!bulkSelectedCount) {
+      return;
+    }
+
+    downloadRecordFiles(bulkSelectedRecords);
   };
   const selectFromList = (id: string) => {
     setHiddenIds((current) => {
@@ -440,10 +533,18 @@ export default function App() {
           {inspectorTab === "list" ? (
             <RecordList
               records={matchedRecords}
+              bulkSelectedIds={bulkSelectedIds}
+              bulkSelectedCount={bulkSelectedCount}
               hiddenIds={hiddenIds}
+              allMatchedSelected={allMatchedSelected}
               selectedId={selectedId}
               hoveredId={hoveredId}
               visibleCount={visibleRecords.length}
+              onBulkDownload={downloadBulkSelected}
+              onBulkHide={hideBulkSelected}
+              onBulkSelectionClear={clearBulkSelection}
+              onBulkSelectionToggleAll={toggleAllMatchedSelected}
+              onBulkShow={showBulkSelected}
               onHideAllMatched={hideMatched}
               onSelect={(id) => {
                 selectFromList(id);
@@ -452,6 +553,7 @@ export default function App() {
               onHover={setHoveredId}
               onShowAllCatalog={showAllCatalog}
               onShowAllMatched={showMatched}
+              onToggleBulkSelected={toggleBulkSelected}
               onToggleHidden={toggleRecordHidden}
             />
           ) : (
