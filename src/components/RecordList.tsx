@@ -79,65 +79,76 @@ export function RecordList({
       </div>
 
       <div className="record-table-head">
-        <span>Сцена</span>
+        <span>ID сцены</span>
+        <span>Сенсор</span>
         <span>Съемка</span>
-        <span>Параметры</span>
+        <span>Площадь / партия</span>
         <span>Видимость</span>
       </div>
 
-      <div className="record-list record-list-compact">
-        {records.map((record) => {
-          const isSelected = record.id === selectedId;
-          const isHovered = record.id === hoveredId;
-          const isHidden = hiddenIds.has(record.id);
+      <div className="record-table-scroll">
+        <div className="record-list record-list-compact">
+          {records.map((record) => {
+            const isSelected = record.id === selectedId;
+            const isHovered = record.id === hoveredId;
+            const isHidden = hiddenIds.has(record.id);
+            const sensorLabel = `${record.sensor} · ${record.variant === "quicklook" ? "QL" : "STD"} · ${record.trackCode}`;
+            const acquiredLabel = `${formatDate(record.acquiredOn)} · ${record.acquiredAt}`;
+            const areaLabel = `${formatArea(record.areaKm2)} км² · ${record.batchDate ?? "без даты"}`;
 
-          return (
-            <div
-              key={record.id}
-              className={`record-row${isSelected ? " is-selected" : ""}${isHovered ? " is-hovered" : ""}${isHidden ? " is-hidden" : ""}`}
-              onMouseEnter={() => onHover(record.id)}
-              onMouseLeave={() => onHover(null)}
-            >
-              <button
-                className="record-row-main"
-                type="button"
-                onClick={() => onSelect(record.id)}
+            return (
+              <div
+                key={record.id}
+                className={`record-row${isSelected ? " is-selected" : ""}${isHovered ? " is-hovered" : ""}${isHidden ? " is-hidden" : ""}`}
+                onMouseEnter={() => onHover(record.id)}
+                onMouseLeave={() => onHover(null)}
               >
-                <div className="record-row-id">
-                  <strong>{record.id}</strong>
-                  <div className="record-row-tags">
-                    <span className="chip chip-accent">{record.sensor}</span>
-                    <span className="chip">{record.variant === "quicklook" ? "quicklook" : "standard"}</span>
-                    <span className="chip">трек {record.trackCode}</span>
-                    {isHidden ? <span className="chip chip-muted">скрыт</span> : null}
-                  </div>
-                </div>
-
-                <div className="record-row-cell">
-                  <strong>{formatDate(record.acquiredOn)}</strong>
-                  <span>{record.acquiredAt}</span>
-                </div>
-
-                <div className="record-row-cell">
-                  <strong>{formatArea(record.areaKm2)} км²</strong>
-                  <span>{record.batchDate ?? "без даты"}</span>
-                </div>
-              </button>
-
-              <div className="record-row-actions">
                 <button
-                  className={`inline-toggle${isHidden ? " is-off" : ""}`}
+                  className="record-row-main"
                   type="button"
-                  onClick={() => onToggleHidden(record.id)}
-                  aria-label={isHidden ? `Показать ${record.id}` : `Скрыть ${record.id}`}
-                  title={isHidden ? "Показать на карте" : "Скрыть с карты"}
+                  onClick={() => onSelect(record.id)}
                 >
-                  {isHidden ? <EyeOffIcon /> : <EyeIcon />}
+                  <span
+                    className="record-row-id"
+                    title={record.id}
+                  >
+                    {record.id}
+                  </span>
+                  <span
+                    className="record-row-cell record-row-meta"
+                    title={sensorLabel}
+                  >
+                    {sensorLabel}
+                  </span>
+                  <span
+                    className="record-row-cell"
+                    title={acquiredLabel}
+                  >
+                    {acquiredLabel}
+                  </span>
+                  <span
+                    className="record-row-cell"
+                    title={areaLabel}
+                  >
+                    {areaLabel}
+                  </span>
                 </button>
+
+                <div className="record-row-actions">
+                  <button
+                    className={`inline-toggle${isHidden ? " is-off" : ""}`}
+                    type="button"
+                    onClick={() => onToggleHidden(record.id)}
+                    aria-label={isHidden ? `Показать ${record.id}` : `Скрыть ${record.id}`}
+                    title={isHidden ? "Показать на карте" : "Скрыть с карты"}
+                  >
+                    {isHidden ? <EyeOffIcon /> : <EyeIcon />}
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </section>
   );
