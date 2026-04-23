@@ -392,22 +392,22 @@ export function Timeline({
       : hasTimeFilter
         ? "Активен диапазон дат из фильтров"
       : "Наведите на столбец или кликните для фильтрации";
+  const toggleLabel = collapsed ? "Развернуть таймлайн" : "Свернуть таймлайн";
+  const ToggleIcon = collapsed ? ChevronUpIcon : ChevronDownIcon;
 
   if (collapsed) {
     return (
       <section className="timeline-panel panel-chrome is-collapsed">
+        <button
+          className="timeline-panel-control"
+          type="button"
+          onClick={onToggleCollapsed}
+          aria-label={toggleLabel}
+          title={toggleLabel}
+        >
+          <ToggleIcon />
+        </button>
         <div className="timeline-collapsed-row">
-          <button
-            className="timeline-toggle timeline-toggle-inline"
-            type="button"
-            onClick={onToggleCollapsed}
-            aria-label="Развернуть таймлайн"
-            title="Развернуть таймлайн"
-          >
-            <ChevronUpIcon />
-            <span>Таймлайн</span>
-          </button>
-
           <div className="timeline-scale timeline-scale-collapsed">
             <div
               className={`timeline-bars${hasTimeFilter ? " has-time-filter" : ""}`}
@@ -476,6 +476,15 @@ export function Timeline({
 
   return (
     <section className="timeline-panel panel-chrome">
+      <button
+        className="timeline-panel-control"
+        type="button"
+        onClick={onToggleCollapsed}
+        aria-label={toggleLabel}
+        title={toggleLabel}
+      >
+        <ToggleIcon />
+      </button>
       <div className="timeline-layout">
         <div className="timeline-summary">
           <div className="timeline-summary-header">
@@ -483,16 +492,6 @@ export function Timeline({
               <p className="eyebrow">Timeline</p>
               <h2>Даты съемки</h2>
             </div>
-            <button
-              className="timeline-toggle"
-              type="button"
-              onClick={onToggleCollapsed}
-              aria-label="Свернуть таймлайн"
-              title="Свернуть таймлайн"
-            >
-              <ChevronDownIcon />
-              <span>Свернуть</span>
-            </button>
           </div>
           <p>
             {records.length} доступны, {activeRecords.length} проходят фильтр · шаг: {unitNames[timeline.unit]}

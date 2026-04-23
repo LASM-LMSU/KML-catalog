@@ -127,10 +127,20 @@ test("таймлайн сворачивается до компактной ли
   await page.goto("/");
 
   const panel = page.locator(".timeline-panel");
+  const collapseButton = page.getByRole("button", { name: "Свернуть таймлайн" });
   const expandedHeight = (await panel.boundingBox())?.height ?? 0;
   expect(expandedHeight).toBeGreaterThan(90);
 
-  await page.getByRole("button", { name: "Свернуть таймлайн" }).click();
+  const panelBox = await panel.boundingBox();
+  const collapseBox = await collapseButton.boundingBox();
+  expect(panelBox).not.toBeNull();
+  expect(collapseBox).not.toBeNull();
+  if (panelBox && collapseBox) {
+    expect(collapseBox.x + collapseBox.width).toBeGreaterThanOrEqual(panelBox.x + panelBox.width - 28);
+    expect(collapseBox.y).toBeLessThanOrEqual(panelBox.y + 20);
+  }
+
+  await collapseButton.click();
   await expect(panel).toHaveClass(/is-collapsed/);
   await expect(page.locator(".timeline-periods-panel")).toHaveCount(0);
   await expect(page.locator(".timeline-bars")).toBeVisible();
