@@ -1405,13 +1405,16 @@ button:disabled {
   .map-toolbar {
     left: calc(10px + var(--safe-left));
     right: calc(10px + var(--safe-right));
-    bottom: calc(78px + var(--safe-bottom));
+    bottom: calc(96px + var(--safe-bottom));
     top: auto;
-    z-index: 21;
+    z-index: 31;
     display: flex;
     flex-direction: row;
     gap: 8px;
     overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
     padding: 8px;
   }
 
@@ -1509,6 +1512,11 @@ button:disabled {
     bottom: calc(10px + var(--safe-bottom));
     padding: 14px 50px 10px 10px;
     border-radius: 22px;
+    max-height: min(44svh, 340px);
+    overflow-x: auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .timeline-panel.is-collapsed {
@@ -1622,17 +1630,13 @@ button:disabled {
   }
 
   .drawer {
-    top: auto;
+    top: calc(10px + var(--safe-top));
     left: calc(12px + var(--safe-left));
     right: calc(12px + var(--safe-right));
-    bottom: calc(92px + var(--safe-bottom));
+    bottom: calc(10px + var(--safe-bottom));
     width: auto;
-    max-height: min(72vh, 720px);
+    max-height: none;
     transform: translateY(calc(100% + 18px));
-  }
-
-  .app-shell.is-timeline-collapsed .drawer {
-    bottom: calc(12px + var(--safe-bottom));
   }
 
   .drawer-left,
@@ -1643,6 +1647,13 @@ button:disabled {
 
   .drawer.is-open {
     transform: translateY(0);
+  }
+
+  .drawer-frame {
+    overflow-x: auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .filters-grid,
