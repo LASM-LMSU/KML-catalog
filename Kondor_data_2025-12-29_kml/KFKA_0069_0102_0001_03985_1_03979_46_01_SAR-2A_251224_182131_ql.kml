@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+	<Document>
+		<name>KFKA</name>
+		<GroundOverlay>
+			<name>KFKA-6 Image Overlay №46</name>
+			<color>54ffffff</color>
+			<Icon>
+				<href>./KFKA_0069_0102_0001_03985_1_03979_46_01_SAR-2A_251224_182131_ql.tif</href>
+			</Icon>
+			<altitudeMode>clampToGround</altitudeMode>
+			<gx:LatLonQuad>
+				<coordinates>159.4233060,54.2149980 159.6026010,54.2363070 159.7422700,53.8342490 159.5647600,53.8130480 </coordinates>
+			</gx:LatLonQuad>
+		</GroundOverlay>
+	</Document>
+</kml>

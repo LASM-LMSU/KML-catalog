@@ -1,0 +1,37 @@
+{
+  "name": "kml-catalog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "scripts": {
+    "catalog:build": "node scripts/build-catalog.mjs",
+    "predev": "npm run catalog:build",
+    "dev": "vite",
+    "prebuild": "npm run catalog:build",
+    "build": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json && vite build",
+    "preview": "vite preview",
+    "test": "node --test",
+    "check": "npm run test && npm run build"
+  },
+  "dependencies": {
+    "@fontsource/fraunces": "^5.1.0",
+    "@fontsource/ibm-plex-mono": "^5.1.0",
+    "@fontsource/space-grotesk": "^5.1.0",
+    "leaflet": "^1.9.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.15",
+    "@types/react": "^18.3.8",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "fast-xml-parser": "^5.7.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}
