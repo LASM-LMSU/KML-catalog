@@ -668,8 +668,8 @@ button:disabled {
 
 .timeline-period-group {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 132px;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
   min-width: 0;
 }
 
@@ -698,6 +698,10 @@ button:disabled {
 
 .timeline-field input:focus {
   box-shadow: 0 0 0 4px rgba(14, 102, 85, 0.12);
+}
+
+.timeline-field-time {
+  max-width: 132px;
 }
 
 .timeline-field-time input {
@@ -1290,29 +1294,31 @@ button:disabled {
     right: calc(12px + var(--safe-right));
     bottom: calc(164px + var(--safe-bottom));
     top: auto;
-    flex-direction: row;
-    justify-content: flex-start;
-    overflow-x: auto;
+    z-index: 21;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
     padding: 10px;
   }
 
   .toolbar-segmented {
-    flex-direction: row;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     border-bottom: 0;
     padding-bottom: 0;
   }
 
   .segmented-button {
-    flex: 1 1 0;
+    width: 100%;
   }
 
   .map-toolbar .toolbar-button {
-    width: auto;
-    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
   }
 
   .toolbar-button {
-    flex: 0 0 auto;
     min-width: 0;
     padding: 0 10px;
   }
@@ -1403,7 +1409,11 @@ button:disabled {
   }
 
   .timeline-period-group {
-    grid-template-columns: minmax(0, 1fr) 112px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .timeline-field-time {
+    max-width: 112px;
   }
 
   .selection-actions {
