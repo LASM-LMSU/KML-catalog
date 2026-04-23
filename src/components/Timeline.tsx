@@ -39,6 +39,14 @@ const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
   year: "numeric",
 });
 
+const dateTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 const dayTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
   day: "2-digit",
   month: "short",
@@ -195,6 +203,7 @@ function formatAxisLabel(timestamp: number, unit: TimelineUnit) {
 }
 
 function formatPeriod(period: CatalogTimePeriod) {
+  const hasExplicitTime = period.start.includes("T") || period.end.includes("T");
   const start = normalizeInput(period.start);
   const end = normalizeInput(period.end, true);
   const startTime = toTime(start);
@@ -208,8 +217,16 @@ function formatPeriod(period: CatalogTimePeriod) {
     leftDate.getMonth() === rightDate.getMonth() &&
     leftDate.getDate() === rightDate.getDate();
 
+  if (!hasExplicitTime && sameDay) {
+    return dateFormatter.format(leftDate);
+  }
+
   if (sameDay) {
     return `${dateFormatter.format(leftDate)} ${timeFormatter.format(leftDate)}-${timeFormatter.format(rightDate)}`;
+  }
+
+  if (hasExplicitTime) {
+    return `${dateTimeFormatter.format(leftDate)} - ${dateTimeFormatter.format(rightDate)}`;
   }
 
   return `${dateFormatter.format(leftDate)} - ${dateFormatter.format(rightDate)}`;
@@ -247,6 +264,14 @@ function formatPeriodCount(value: number) {
 
 function isSamePeriod(left: CatalogTimePeriod, right: CatalogTimePeriod) {
   return normalizeInput(left.start) === normalizeInput(right.start) && normalizeInput(left.end, true) === normalizeInput(right.end, true);
+}
+
+function buildDraftValue(date: string, time: string) {
+  if (!date) {
+    return "";
+  }
+
+  return time ? `${date}T${time}` : date;
 }
 
 function buildTimeline(records: CatalogRecord[], activeIds: ReadonlySet<string>) {
@@ -305,13 +330,15 @@ export function Timeline({
   onClearTime,
   onRemovePeriod,
 }: TimelineProps) {
-  const [draftStart, setDraftStart] = useState("");
-  const [draftEnd, setDraftEnd] = useState("");
+  const [draftStartDate, setDraftStartDate] = useState("");
+  const [draftStartTime, setDraftStartTime] = useState("");
+  const [draftEndDate, setDraftEndDate] = useState("");
+  const [draftEndTime, setDraftEndTime] = useState("");
   const [hoveredBinStart, setHoveredBinStart] = useState<number | null>(null);
   const activeIds = new Set(activeRecords.map((record) => record.id));
   const timeline = buildTimeline(records, activeIds);
   const hasTimeFilter = filters.timePeriods.length > 0 || Boolean(filters.dateFrom || filters.dateTo);
-  const canAddPeriod = Boolean(draftStart && draftEnd);
+  const canAddPeriod = Boolean(draftStartDate && draftEndDate);
 
   const addDraftPeriod = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -320,17 +347,19 @@ export function Timeline({
       return;
     }
 
-    const start = normalizeInput(draftStart);
-    const end = normalizeInput(draftEnd, true);
-    const startTime = toTime(start);
-    const endTime = toTime(end);
+    const start = buildDraftValue(draftStartDate, draftStartTime);
+    const end = buildDraftValue(draftEndDate, draftEndTime);
+    const startTime = toTime(normalizeInput(start));
+    const endTime = toTime(normalizeInput(end, true));
 
     onAddPeriod({
       start: startTime <= endTime ? start : end,
       end: startTime <= endTime ? end : start,
     });
-    setDraftStart("");
-    setDraftEnd("");
+    setDraftStartDate("");
+    setDraftStartTime("");
+    setDraftEndDate("");
+    setDraftEndTime("");
   };
 
   if (!timeline) {
@@ -473,22 +502,44 @@ export function Timeline({
               className="timeline-period-form"
               onSubmit={addDraftPeriod}
             >
-              <label className="timeline-field">
-                <span>От</span>
-                <input
-                  type="datetime-local"
-                  value={draftStart}
-                  onChange={(event) => setDraftStart(event.target.value)}
-                />
-              </label>
-              <label className="timeline-field">
-                <span>До</span>
-                <input
-                  type="datetime-local"
-                  value={draftEnd}
-                  onChange={(event) => setDraftEnd(event.target.value)}
-                />
-              </label>
+              <div className="timeline-period-group">
+                <label className="timeline-field">
+                  <span>От, дата</span>
+                  <input
+                    type="date"
+                    value={draftStartDate}
+                    onChange={(event) => setDraftStartDate(event.target.value)}
+                  />
+                </label>
+                <label className="timeline-field timeline-field-time">
+                  <span>Время, опционально</span>
+                  <input
+                    type="time"
+                    step="60"
+                    value={draftStartTime}
+                    onChange={(event) => setDraftStartTime(event.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="timeline-period-group">
+                <label className="timeline-field">
+                  <span>До, дата</span>
+                  <input
+                    type="date"
+                    value={draftEndDate}
+                    onChange={(event) => setDraftEndDate(event.target.value)}
+                  />
+                </label>
+                <label className="timeline-field timeline-field-time">
+                  <span>Время, опционально</span>
+                  <input
+                    type="time"
+                    step="60"
+                    value={draftEndTime}
+                    onChange={(event) => setDraftEndTime(event.target.value)}
+                  />
+                </label>
+              </div>
               <button
                 className="button button-ghost button-compact"
                 type="submit"

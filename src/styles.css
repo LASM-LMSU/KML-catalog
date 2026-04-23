@@ -666,6 +666,13 @@ button:disabled {
   align-items: end;
 }
 
+.timeline-period-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  gap: 8px;
+  min-width: 0;
+}
+
 .timeline-field {
   display: grid;
   gap: 4px;
@@ -691,6 +698,10 @@ button:disabled {
 
 .timeline-field input:focus {
   box-shadow: 0 0 0 4px rgba(14, 102, 85, 0.12);
+}
+
+.timeline-field-time input {
+  text-align: center;
 }
 
 .timeline-empty {
@@ -1388,8 +1399,11 @@ button:disabled {
   }
 
   .timeline-period-form {
-    grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) auto;
-    overflow-x: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-period-group {
+    grid-template-columns: minmax(0, 1fr) 112px;
   }
 
   .selection-actions {
