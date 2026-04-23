@@ -1625,10 +1625,14 @@ button:disabled {
     top: auto;
     left: calc(12px + var(--safe-left));
     right: calc(12px + var(--safe-right));
-    bottom: calc(12px + var(--safe-bottom));
+    bottom: calc(92px + var(--safe-bottom));
     width: auto;
     max-height: min(72vh, 720px);
     transform: translateY(calc(100% + 18px));
+  }
+
+  .app-shell.is-timeline-collapsed .drawer {
+    bottom: calc(12px + var(--safe-bottom));
   }
 
   .drawer-left,
