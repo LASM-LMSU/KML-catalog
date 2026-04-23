@@ -28,5 +28,11 @@ export default defineConfig({
         ...devices["Pixel 5"],
       },
     },
+    {
+      name: "mobile-ios",
+      use: {
+        ...devices["iPhone 12 mini"],
+      },
+    },
   ],
 });
