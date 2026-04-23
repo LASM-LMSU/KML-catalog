@@ -31,3 +31,7 @@ yarn-error.log*
 # generated type/build metadata
 *.tsbuildinfo
 next-env.d.ts
+
+# playwright
+playwright-report/
+test-results/

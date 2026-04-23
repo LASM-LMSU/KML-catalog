@@ -321,15 +321,17 @@ export function buildCatalog(rootDir, files = discoverKmlFiles(rootDir)) {
     areaKm2Total += record.areaKm2;
   }
 
-  const bounds = records.reduce(
-    (acc, record) => [
-      Math.min(acc[0], record.bbox[0]),
-      Math.min(acc[1], record.bbox[1]),
-      Math.max(acc[2], record.bbox[2]),
-      Math.max(acc[3], record.bbox[3]),
-    ],
-    /** @type {BBox} */ ([Infinity, Infinity, -Infinity, -Infinity]),
-  );
+  const bounds = records.length
+    ? records.reduce(
+      (acc, record) => [
+        Math.min(acc[0], record.bbox[0]),
+        Math.min(acc[1], record.bbox[1]),
+        Math.max(acc[2], record.bbox[2]),
+        Math.max(acc[3], record.bbox[3]),
+      ],
+      /** @type {BBox} */ ([Infinity, Infinity, -Infinity, -Infinity]),
+    )
+    : /** @type {BBox} */ ([0, 0, 0, 0]);
 
   return {
     schemaVersion: 1,

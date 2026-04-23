@@ -6,10 +6,6 @@ const rootDir = resolve(process.cwd());
 assertRepositoryState(rootDir);
 
 const files = discoverKmlFiles(rootDir);
-if (!files.length) {
-  throw new Error("No .kml files were found in the repository.");
-}
-
 const catalog = writeCatalogArtifacts(rootDir, files);
 
 console.log(
@@ -20,4 +16,3 @@ console.log(
     `output: public/data/catalog.json`,
   ].join(" | "),
 );
-

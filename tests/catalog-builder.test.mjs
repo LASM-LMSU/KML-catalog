@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getAreaKm2, parseCatalogFilename, parseKmlContent, parseLatLonQuad } from "../scripts/lib/catalog-builder.mjs";
+import { buildCatalog, getAreaKm2, parseCatalogFilename, parseKmlContent, parseLatLonQuad } from "../scripts/lib/catalog-builder.mjs";
 
 test("parseCatalogFilename extracts quicklook metadata", () => {
   const parsed = parseCatalogFilename("KFKA_0069_0307_0001_04450_1_04450_33_01_SAR-2A_251224_190735_ql");
@@ -58,3 +58,11 @@ test("getAreaKm2 returns a positive area for a compact quad", () => {
   assert.ok(area > 0);
 });
 
+test("buildCatalog supports empty kml sets", () => {
+  const catalog = buildCatalog(process.cwd(), []);
+
+  assert.equal(catalog.total, 0);
+  assert.deepEqual(catalog.bounds, [0, 0, 0, 0]);
+  assert.equal(catalog.stats.latestAcquiredOn, null);
+  assert.equal(catalog.stats.earliestAcquiredOn, null);
+});
