@@ -184,6 +184,20 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setFiltersOpen(false);
+      setInspectorOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   const deferredQuery = useDeferredValue(filters.query);
   const effectiveFilters = { ...filters, query: deferredQuery };
   const matchedRecords = catalog ? filterRecords(catalog.records, effectiveFilters, visibleBounds) : [];
@@ -402,6 +416,7 @@ export default function App() {
     setInspectorOpen(false);
   };
   const openList = () => {
+    setFiltersOpen(false);
     setInspectorTab("list");
     setInspectorOpen(true);
   };
@@ -409,6 +424,7 @@ export default function App() {
     if (!selectedRecord) {
       return;
     }
+    setFiltersOpen(false);
     setInspectorTab("details");
     setInspectorOpen(true);
   };
@@ -500,7 +516,15 @@ export default function App() {
           active={filtersOpen}
           badge={activeFilterCount || undefined}
           label="Фильтры"
-          onClick={() => setFiltersOpen((value) => !value)}
+          onClick={() =>
+            setFiltersOpen((value) => {
+              const next = !value;
+              if (next) {
+                setInspectorOpen(false);
+              }
+              return next;
+            })
+          }
         >
           <FilterIcon />
         </ToolbarButton>
