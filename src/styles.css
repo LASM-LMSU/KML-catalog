@@ -637,6 +637,10 @@ button:disabled {
   gap: 8px;
 }
 
+.button-label-mobile-hidden {
+  display: inline;
+}
+
 .button-compact {
   min-height: 38px;
   padding: 0 12px;
@@ -1023,6 +1027,17 @@ button:disabled {
   .list-header,
   .drawer-header {
     flex-direction: column;
+  }
+
+  .details-header .button-accent {
+    align-self: flex-end;
+    min-width: 42px;
+    width: 42px;
+    padding: 0;
+  }
+
+  .details-header .button-accent .button-label-mobile-hidden {
+    display: none;
   }
 
   .drawer-tab {

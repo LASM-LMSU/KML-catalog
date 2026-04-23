@@ -37,9 +37,11 @@ export function DetailsPanel({ record }: DetailsPanelProps) {
           className="button button-accent"
           href={`./${encodeURI(record.sitePath)}`}
           download
+          aria-label={`Скачать KML ${record.id}`}
+          title="Скачать KML"
         >
           <DownloadIcon className="button-icon" />
-          Скачать KML
+          <span className="button-label-mobile-hidden">Скачать KML</span>
         </a>
       </div>
 
