@@ -1,15 +1,17 @@
 import { type CSSProperties, type FormEvent, useState } from "react";
-import { CalendarIcon, CloseIcon } from "./Icons";
+import { CalendarIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon } from "./Icons";
 import type { CatalogFilters, CatalogRecord, CatalogTimePeriod } from "../types";
 
 type TimelineProps = {
   activeRecords: CatalogRecord[];
+  collapsed: boolean;
   filters: CatalogFilters;
   records: CatalogRecord[];
   onAddPeriod: (period: CatalogTimePeriod) => void;
   onApplyPeriod: (period: CatalogTimePeriod) => void;
   onClearTime: () => void;
   onRemovePeriod: (index: number) => void;
+  onToggleCollapsed: () => void;
 };
 
 type TimelineUnit = "quarter-hour" | "hour" | "day" | "month" | "year";
@@ -323,12 +325,14 @@ function buildTimeline(records: CatalogRecord[], activeIds: ReadonlySet<string>)
 
 export function Timeline({
   activeRecords,
+  collapsed,
   filters,
   records,
   onAddPeriod,
   onApplyPeriod,
   onClearTime,
   onRemovePeriod,
+  onToggleCollapsed,
 }: TimelineProps) {
   const [draftStartDate, setDraftStartDate] = useState("");
   const [draftStartTime, setDraftStartTime] = useState("");
@@ -389,12 +393,107 @@ export function Timeline({
         ? "Активен диапазон дат из фильтров"
       : "Наведите на столбец или кликните для фильтрации";
 
+  if (collapsed) {
+    return (
+      <section className="timeline-panel panel-chrome is-collapsed">
+        <div className="timeline-collapsed-row">
+          <button
+            className="timeline-toggle timeline-toggle-inline"
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-label="Развернуть таймлайн"
+            title="Развернуть таймлайн"
+          >
+            <ChevronUpIcon />
+            <span>Таймлайн</span>
+          </button>
+
+          <div className="timeline-scale timeline-scale-collapsed">
+            <div
+              className={`timeline-bars${hasTimeFilter ? " has-time-filter" : ""}`}
+              aria-label="Доступные даты съемки"
+            >
+              <div className="timeline-baseline" />
+              {timeline.bins.map((bin) => {
+                const left = ((bin.start - timeline.domainStart) / domainSpan) * 100;
+                const width = ((bin.end - bin.start) / domainSpan) * 100;
+                const isActive = hasTimeFilter && bin.activeCount > 0;
+                const period = {
+                  start: toInputValue(bin.start),
+                  end: toInputValue(bin.end - 1000),
+                };
+                const isExactActive = filters.timePeriods.length === 1 && isSamePeriod(filters.timePeriods[0], period);
+                const style = {
+                  "--bar-height": `${16 + (bin.count / timeline.maxCount) * 44}px`,
+                  "--bar-left": `${left}%`,
+                  "--bar-width": `${width}%`,
+                } as CSSProperties;
+
+                return (
+                  <button
+                    key={bin.start}
+                    className={`timeline-bar${isActive ? " is-active" : ""}${hasTimeFilter && !isActive ? " is-muted" : ""}`}
+                    type="button"
+                    style={style}
+                    onMouseEnter={() => setHoveredBinStart(bin.start)}
+                    onMouseLeave={() => setHoveredBinStart(null)}
+                    onFocus={() => setHoveredBinStart(bin.start)}
+                    onBlur={() => setHoveredBinStart((current) => (current === bin.start ? null : current))}
+                    onClick={() => {
+                      if (isExactActive) {
+                        onClearTime();
+                        return;
+                      }
+
+                      onApplyPeriod(period);
+                    }}
+                    title={`${bin.label}: ${bin.count} снимков. Нажмите, чтобы отфильтровать.`}
+                    aria-label={`${bin.label}: ${bin.count} снимков`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="timeline-collapsed-meta">
+            {filters.timePeriods.length ? (
+              <span className="timeline-periods-count">{filters.timePeriods.length}</span>
+            ) : null}
+            {hasTimeFilter ? (
+              <button
+                className="timeline-reset timeline-reset-inline"
+                type="button"
+                onClick={onClearTime}
+              >
+                <CloseIcon />
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="timeline-panel panel-chrome">
       <div className="timeline-layout">
         <div className="timeline-summary">
-          <p className="eyebrow">Timeline</p>
-          <h2>Даты съемки</h2>
+          <div className="timeline-summary-header">
+            <div>
+              <p className="eyebrow">Timeline</p>
+              <h2>Даты съемки</h2>
+            </div>
+            <button
+              className="timeline-toggle"
+              type="button"
+              onClick={onToggleCollapsed}
+              aria-label="Свернуть таймлайн"
+              title="Свернуть таймлайн"
+            >
+              <ChevronDownIcon />
+              <span>Свернуть</span>
+            </button>
+          </div>
           <p>
             {records.length} доступны, {activeRecords.length} проходят фильтр · шаг: {unitNames[timeline.unit]}
           </p>

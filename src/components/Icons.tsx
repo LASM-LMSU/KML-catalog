@@ -83,6 +83,22 @@ export function CloseIcon(props: IconProps) {
   );
 }
 
+export function ChevronUpIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M6 14l6-6 6 6" />
+    </IconBase>
+  );
+}
+
+export function ChevronDownIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M6 10l6 6 6-6" />
+    </IconBase>
+  );
+}
+
 export function FocusIcon(props: IconProps) {
   return (
     <IconBase {...props}>

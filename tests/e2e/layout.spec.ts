@@ -122,3 +122,23 @@ test("ручной период timeline не перекрывает поле д
   await dateInput.fill("2025-12-25");
   await expect(dateInput).toHaveValue("2025-12-25");
 });
+
+test("таймлайн сворачивается до компактной линии и разворачивается обратно", async ({ page }) => {
+  await page.goto("/");
+
+  const panel = page.locator(".timeline-panel");
+  const expandedHeight = (await panel.boundingBox())?.height ?? 0;
+  expect(expandedHeight).toBeGreaterThan(90);
+
+  await page.getByRole("button", { name: "Свернуть таймлайн" }).click();
+  await expect(panel).toHaveClass(/is-collapsed/);
+  await expect(page.locator(".timeline-periods-panel")).toHaveCount(0);
+  await expect(page.locator(".timeline-bars")).toBeVisible();
+
+  const collapsedHeight = (await panel.boundingBox())?.height ?? 0;
+  expect(collapsedHeight).toBeLessThan(expandedHeight);
+
+  await page.getByRole("button", { name: "Развернуть таймлайн" }).click();
+  await expect(panel).not.toHaveClass(/is-collapsed/);
+  await expect(page.locator(".timeline-periods-panel")).toBeVisible();
+});

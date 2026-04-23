@@ -115,6 +115,7 @@ export default function App() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [inspectorTab, setInspectorTab] = useState<"list" | "details">("list");
+  const [timelineCollapsed, setTimelineCollapsed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -370,7 +371,7 @@ export default function App() {
   };
 
   return (
-    <main className="app-shell app-shell-map">
+    <main className={`app-shell app-shell-map${timelineCollapsed ? " is-timeline-collapsed" : ""}`}>
       <div className="background-orb background-orb-left" />
       <div className="background-orb background-orb-right" />
 
@@ -505,12 +506,14 @@ export default function App() {
 
       <Timeline
         activeRecords={matchedRecords}
+        collapsed={timelineCollapsed}
         filters={filters}
         records={timelineRecords}
         onAddPeriod={addTimelinePeriod}
         onApplyPeriod={applyTimelinePeriod}
         onClearTime={clearTimeFilters}
         onRemovePeriod={removeTimelinePeriod}
+        onToggleCollapsed={() => setTimelineCollapsed((current) => !current)}
       />
 
       <aside className={`drawer drawer-left${filtersOpen ? " is-open" : ""}`}>
