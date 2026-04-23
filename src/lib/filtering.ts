@@ -1,4 +1,4 @@
-import type { BBox, CatalogFilters, CatalogRecord } from "../types";
+import type { BBox, CatalogFilters, CatalogRecord, CatalogTimePeriod } from "../types";
 
 export function intersectsBounds(bounds: BBox, visibleBounds: BBox) {
   return !(
@@ -11,6 +11,49 @@ export function intersectsBounds(bounds: BBox, visibleBounds: BBox) {
 
 function normalizeQuery(value: string) {
   return value.trim().toLowerCase();
+}
+
+function normalizePeriodStart(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  if (!value.includes("T")) {
+    return `${value}T00:00:00`;
+  }
+
+  return value.length === 16 ? `${value}:00` : value;
+}
+
+function normalizePeriodEnd(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  if (!value.includes("T")) {
+    return `${value}T23:59:59`;
+  }
+
+  return value.length === 16 ? `${value}:59` : value;
+}
+
+function isInsidePeriod(timestamp: string, period: CatalogTimePeriod) {
+  const start = normalizePeriodStart(period.start);
+  const end = normalizePeriodEnd(period.end);
+
+  if (!start || !end) {
+    return false;
+  }
+
+  return start <= end ? timestamp >= start && timestamp <= end : timestamp >= end && timestamp <= start;
+}
+
+function isInsideAnyPeriod(record: CatalogRecord, periods: CatalogTimePeriod[]) {
+  if (!periods.length) {
+    return true;
+  }
+
+  return periods.some((period) => isInsidePeriod(record.acquiredAtSort, period));
 }
 
 export function filterRecords(records: CatalogRecord[], filters: CatalogFilters, visibleBounds: BBox | null) {
@@ -37,12 +80,18 @@ export function filterRecords(records: CatalogRecord[], filters: CatalogFilters,
       return false;
     }
 
-    if (filters.dateFrom && record.acquiredOn < filters.dateFrom) {
-      return false;
-    }
+    if (filters.timePeriods.length) {
+      if (!isInsideAnyPeriod(record, filters.timePeriods)) {
+        return false;
+      }
+    } else {
+      if (filters.dateFrom && record.acquiredOn < filters.dateFrom) {
+        return false;
+      }
 
-    if (filters.dateTo && record.acquiredOn > filters.dateTo) {
-      return false;
+      if (filters.dateTo && record.acquiredOn > filters.dateTo) {
+        return false;
+      }
     }
 
     if (filters.visibleOnly && visibleBounds && !intersectsBounds(record.bbox, visibleBounds)) {
@@ -78,8 +127,8 @@ export function isDefaultFilters(filters: CatalogFilters) {
     filters.batchDate === "all" &&
     filters.dateFrom === "" &&
     filters.dateTo === "" &&
+    filters.timePeriods.length === 0 &&
     filters.sort === "newest" &&
     filters.visibleOnly === false
   );
 }
-

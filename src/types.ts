@@ -54,6 +54,11 @@ export type CatalogData = {
   records: CatalogRecord[];
 };
 
+export type CatalogTimePeriod = {
+  start: string;
+  end: string;
+};
+
 export type CatalogFilters = {
   query: string;
   sensor: string;
@@ -62,7 +67,7 @@ export type CatalogFilters = {
   batchDate: string;
   dateFrom: string;
   dateTo: string;
+  timePeriods: CatalogTimePeriod[];
   sort: "newest" | "oldest" | "largest" | "smallest";
   visibleOnly: boolean;
 };
-

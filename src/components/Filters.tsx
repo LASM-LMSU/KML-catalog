@@ -21,6 +21,10 @@ function setFilter<T extends keyof CatalogFilters>(filters: CatalogFilters, key:
   return { ...filters, [key]: value };
 }
 
+function setDateFilter<T extends "dateFrom" | "dateTo">(filters: CatalogFilters, key: T, value: CatalogFilters[T]) {
+  return { ...filters, [key]: value, timePeriods: [] };
+}
+
 export function Filters({ filters, options, onChange, onReset, onFitToSelection, canReset }: FiltersProps) {
   return (
     <section className="filters-panel drawer-panel">
@@ -131,7 +135,7 @@ export function Filters({ filters, options, onChange, onReset, onFitToSelection,
             <input
               type="date"
               value={filters.dateFrom}
-              onChange={(event) => onChange(setFilter(filters, "dateFrom", event.target.value))}
+              onChange={(event) => onChange(setDateFilter(filters, "dateFrom", event.target.value))}
             />
           </label>
 
@@ -140,7 +144,7 @@ export function Filters({ filters, options, onChange, onReset, onFitToSelection,
             <input
               type="date"
               value={filters.dateTo}
-              onChange={(event) => onChange(setFilter(filters, "dateTo", event.target.value))}
+              onChange={(event) => onChange(setDateFilter(filters, "dateTo", event.target.value))}
             />
           </label>
 

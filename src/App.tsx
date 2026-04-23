@@ -3,11 +3,12 @@ import { Filters } from "./components/Filters";
 import { CatalogMap } from "./components/CatalogMap";
 import { RecordList } from "./components/RecordList";
 import { DetailsPanel } from "./components/DetailsPanel";
+import { Timeline } from "./components/Timeline";
 import { CalendarIcon, CloseIcon, DownloadIcon, FilterIcon, FocusIcon, InfoIcon, LayersIcon, SearchIcon } from "./components/Icons";
 import { loadCatalog } from "./lib/catalog";
 import { filterRecords, isDefaultFilters } from "./lib/filtering";
 import { formatDate, formatGeneratedAt } from "./lib/format";
-import type { BBox, CatalogData, CatalogFilters, CatalogRecord } from "./types";
+import type { BBox, CatalogData, CatalogFilters, CatalogRecord, CatalogTimePeriod } from "./types";
 
 const DEFAULT_FILTERS: CatalogFilters = {
   query: "",
@@ -17,6 +18,7 @@ const DEFAULT_FILTERS: CatalogFilters = {
   batchDate: "all",
   dateFrom: "",
   dateTo: "",
+  timePeriods: [],
   sort: "newest",
   visibleOnly: false,
 };
@@ -47,6 +49,9 @@ function getActiveFilterCount(filters: CatalogFilters) {
     count += 1;
   }
   if (filters.dateTo) {
+    count += 1;
+  }
+  if (filters.timePeriods.length) {
     count += 1;
   }
   if (filters.sort !== "newest") {
@@ -138,6 +143,9 @@ export default function App() {
   const deferredQuery = useDeferredValue(filters.query);
   const effectiveFilters = { ...filters, query: deferredQuery };
   const matchedRecords = catalog ? filterRecords(catalog.records, effectiveFilters, visibleBounds) : [];
+  const timelineRecords = catalog
+    ? filterRecords(catalog.records, { ...effectiveFilters, dateFrom: "", dateTo: "", timePeriods: [] }, visibleBounds)
+    : [];
   const visibleRecords = matchedRecords.filter((record) => !hiddenIds.has(record.id));
 
   useEffect(() => {
@@ -236,6 +244,30 @@ export default function App() {
   };
   const showAllCatalog = () => {
     setHiddenIds(new Set());
+  };
+  const applyTimelinePeriod = (period: CatalogTimePeriod) => {
+    setFilters((current) => ({ ...current, dateFrom: "", dateTo: "", timePeriods: [period] }));
+  };
+  const addTimelinePeriod = (period: CatalogTimePeriod) => {
+    setFilters((current) => {
+      const exists = current.timePeriods.some((existing) => existing.start === period.start && existing.end === period.end);
+
+      return {
+        ...current,
+        dateFrom: "",
+        dateTo: "",
+        timePeriods: exists ? current.timePeriods : [...current.timePeriods, period],
+      };
+    });
+  };
+  const removeTimelinePeriod = (index: number) => {
+    setFilters((current) => ({
+      ...current,
+      timePeriods: current.timePeriods.filter((_, periodIndex) => periodIndex !== index),
+    }));
+  };
+  const clearTimeFilters = () => {
+    setFilters((current) => ({ ...current, dateFrom: "", dateTo: "", timePeriods: [] }));
   };
   const clearBulkSelection = () => {
     setBulkSelectedIds(new Set());
@@ -470,6 +502,16 @@ export default function App() {
           </div>
         </section>
       ) : null}
+
+      <Timeline
+        activeRecords={matchedRecords}
+        filters={filters}
+        records={timelineRecords}
+        onAddPeriod={addTimelinePeriod}
+        onApplyPeriod={applyTimelinePeriod}
+        onClearTime={clearTimeFilters}
+        onRemovePeriod={removeTimelinePeriod}
+      />
 
       <aside className={`drawer drawer-left${filtersOpen ? " is-open" : ""}`}>
         <div className="drawer-frame panel-chrome">
