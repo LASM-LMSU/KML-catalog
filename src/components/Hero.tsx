@@ -10,8 +10,8 @@ export function Hero({ catalog, filteredRecords }: HeroProps) {
   return (
     <section className="hero panel">
       <div className="hero-copy">
-        <p className="eyebrow">LASM MSU / Static Coverage Catalog</p>
-        <h1>Каталог охватов лаборатории аэрокосмических снимков МГУ</h1>
+        <p className="eyebrow">LAKM MSU / Static Coverage Catalog</p>
+        <h1>Каталог охватов лаборатории аэрокосмических методов МГУ</h1>
         <p className="hero-lead">
           Статический каталог KML-охватов для GitHub Pages. Данные приводятся к единому JSON-индексу на этапе сборки,
           поэтому сайт остается быстрым даже при росте архива.
