@@ -12,7 +12,7 @@ type RecordListProps = {
 export function RecordList({ records, selectedId, hoveredId, onSelect, onHover }: RecordListProps) {
   if (!records.length) {
     return (
-      <section className="panel list-panel empty-state">
+      <section className="list-panel drawer-panel empty-state">
         <p className="eyebrow">Результаты</p>
         <h2>Ничего не найдено</h2>
         <p>Снимите часть фильтров или подвиньте карту, если включен отбор по видимой области.</p>
@@ -21,11 +21,12 @@ export function RecordList({ records, selectedId, hoveredId, onSelect, onHover }
   }
 
   return (
-    <section className="panel list-panel">
+    <section className="list-panel drawer-panel">
       <div className="list-header">
         <div>
           <p className="eyebrow">Результаты</p>
           <h2>{records.length} записей</h2>
+          <p className="drawer-copy-compact">Список остается компактным, а полный разбор кадра открывается в соседней вкладке.</p>
         </div>
       </div>
 
@@ -74,4 +75,3 @@ export function RecordList({ records, selectedId, hoveredId, onSelect, onHover }
     </section>
   );
 }
-

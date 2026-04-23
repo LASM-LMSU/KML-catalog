@@ -1,11 +1,12 @@
-import { useDeferredValue, useEffect, useState } from "react";
-import { Hero } from "./components/Hero";
+import { type ReactNode, useDeferredValue, useEffect, useState } from "react";
 import { Filters } from "./components/Filters";
 import { CatalogMap } from "./components/CatalogMap";
 import { RecordList } from "./components/RecordList";
 import { DetailsPanel } from "./components/DetailsPanel";
+import { CalendarIcon, CloseIcon, DownloadIcon, FilterIcon, FocusIcon, InfoIcon, LayersIcon, SearchIcon } from "./components/Icons";
 import { loadCatalog } from "./lib/catalog";
 import { filterRecords, isDefaultFilters } from "./lib/filtering";
+import { formatDate, formatGeneratedAt } from "./lib/format";
 import type { BBox, CatalogData, CatalogFilters } from "./types";
 
 const DEFAULT_FILTERS: CatalogFilters = {
@@ -24,14 +25,78 @@ function unique(values: string[]) {
   return [...new Set(values)].sort((left, right) => left.localeCompare(right));
 }
 
+function getActiveFilterCount(filters: CatalogFilters) {
+  let count = 0;
+
+  if (filters.query.trim()) {
+    count += 1;
+  }
+  if (filters.sensor !== "all") {
+    count += 1;
+  }
+  if (filters.variant !== "all") {
+    count += 1;
+  }
+  if (filters.trackCode !== "all") {
+    count += 1;
+  }
+  if (filters.batchDate !== "all") {
+    count += 1;
+  }
+  if (filters.dateFrom) {
+    count += 1;
+  }
+  if (filters.dateTo) {
+    count += 1;
+  }
+  if (filters.sort !== "newest") {
+    count += 1;
+  }
+  if (filters.visibleOnly) {
+    count += 1;
+  }
+
+  return count;
+}
+
+type ToolbarButtonProps = {
+  active?: boolean;
+  badge?: number | string;
+  children: ReactNode;
+  disabled?: boolean;
+  label: string;
+  onClick: () => void;
+};
+
+function ToolbarButton({ active = false, badge, children, disabled = false, label, onClick }: ToolbarButtonProps) {
+  return (
+    <button
+      className={`toolbar-button${active ? " is-active" : ""}`}
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+    >
+      <span className="toolbar-icon">{children}</span>
+      <span className="toolbar-label">{label}</span>
+      {badge !== undefined ? <span className="toolbar-badge">{badge}</span> : null}
+    </button>
+  );
+}
+
 export default function App() {
   const [catalog, setCatalog] = useState<CatalogData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [basemap, setBasemap] = useState<"light" | "satellite">("light");
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [visibleBounds, setVisibleBounds] = useState<BBox | null>(null);
   const [fitRequest, setFitRequest] = useState(0);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [inspectorTab, setInspectorTab] = useState<"list" | "details">("list");
 
   useEffect(() => {
     let cancelled = false;
@@ -69,15 +134,15 @@ export default function App() {
       return;
     }
 
-    if (!selectedId || !filteredRecords.some((record) => record.id === selectedId)) {
-      setSelectedId(filteredRecords[0].id);
+    if (selectedId && !filteredRecords.some((record) => record.id === selectedId)) {
+      setSelectedId(null);
     }
   }, [filteredRecords, selectedId]);
 
   if (error) {
     return (
       <main className="app-shell">
-        <section className="panel error-panel">
+        <section className="panel-chrome error-panel">
           <p className="eyebrow">Ошибка загрузки</p>
           <h1>Каталог не удалось инициализировать</h1>
           <p>{error}</p>
@@ -89,7 +154,7 @@ export default function App() {
   if (!catalog) {
     return (
       <main className="app-shell">
-        <section className="panel loading-panel">
+        <section className="panel-chrome loading-panel">
           <p className="eyebrow">Инициализация</p>
           <h1>Собираю индекс каталога</h1>
           <p>После генерации `catalog.json` интерфейс загрузит карту, фильтры и карточки покрытий.</p>
@@ -110,50 +175,232 @@ export default function App() {
     value,
     label: value === "unspecified" ? "без даты" : value,
   }));
+  const activeFilterCount = getActiveFilterCount(filters);
+  const closeDrawers = () => {
+    setFiltersOpen(false);
+    setInspectorOpen(false);
+  };
+  const openList = () => {
+    setInspectorTab("list");
+    setInspectorOpen(true);
+  };
+  const openDetails = () => {
+    if (!selectedRecord) {
+      return;
+    }
+    setInspectorTab("details");
+    setInspectorOpen(true);
+  };
 
   return (
-    <main className="app-shell">
+    <main className="app-shell app-shell-map">
       <div className="background-orb background-orb-left" />
       <div className="background-orb background-orb-right" />
 
-      <Hero
-        catalog={catalog}
-        filteredRecords={filteredRecords}
+      <CatalogMap
+        basemap={basemap}
+        records={filteredRecords}
+        selectedId={selectedId}
+        hoveredId={hoveredId}
+        onSelect={setSelectedId}
+        onBoundsChange={setVisibleBounds}
+        fitRequest={fitRequest}
       />
 
-      <Filters
-        filters={filters}
-        options={{ sensors, variants, tracks, batches }}
-        onChange={setFilters}
-        onReset={() => setFilters(DEFAULT_FILTERS)}
-        onFitToSelection={() => setFitRequest((value) => value + 1)}
-        canReset={!isDefaultFilters(filters)}
+      <button
+        className={`app-backdrop${filtersOpen || inspectorOpen ? " is-visible" : ""}`}
+        type="button"
+        aria-label="Закрыть открытые панели"
+        onClick={closeDrawers}
       />
 
-      <section className="content-grid">
-        <div className="content-main">
-          <CatalogMap
-            records={filteredRecords}
-            selectedId={selectedId}
-            hoveredId={hoveredId}
-            onSelect={setSelectedId}
-            onBoundsChange={setVisibleBounds}
-            fitRequest={fitRequest}
-          />
+      <header className="hud panel-chrome">
+        <div className="hud-brand">
+          <div className="brand-badge">K</div>
+          <div className="brand-copy">
+            <strong>Каталог снимков ЛАС МГУ</strong>
+            <span>Статический archive-first интерфейс поверх KML-охватов</span>
+          </div>
         </div>
 
-        <div className="content-side">
-          <DetailsPanel record={selectedRecord} />
-          <RecordList
-            records={filteredRecords}
-            selectedId={selectedId}
-            hoveredId={hoveredId}
-            onSelect={setSelectedId}
-            onHover={setHoveredId}
+        <label className="hud-search">
+          <SearchIcon className="search-icon" />
+          <input
+            type="search"
+            placeholder="Поиск по ID, сенсору, треку, дате, overlay"
+            value={filters.query}
+            onChange={(event) => setFilters({ ...filters, query: event.target.value })}
+          />
+        </label>
+
+        <div className="hud-pills">
+          <span className="hud-pill">
+            <LayersIcon className="hud-pill-icon" />
+            {filteredRecords.length} / {catalog.total}
+          </span>
+          <span className="hud-pill">
+            <CalendarIcon className="hud-pill-icon" />
+            {formatDate(catalog.stats.latestAcquiredOn)}
+          </span>
+          <span className="hud-pill hud-pill-wide">UTC {formatGeneratedAt(catalog.generatedAt)}</span>
+        </div>
+      </header>
+
+      <nav className="map-toolbar panel-chrome">
+        <div className="toolbar-segmented">
+          <button
+            className={`segmented-button${basemap === "light" ? " is-active" : ""}`}
+            type="button"
+            onClick={() => setBasemap("light")}
+          >
+            Карта
+          </button>
+          <button
+            className={`segmented-button${basemap === "satellite" ? " is-active" : ""}`}
+            type="button"
+            onClick={() => setBasemap("satellite")}
+          >
+            Спутник
+          </button>
+        </div>
+
+        <ToolbarButton
+          active={filtersOpen}
+          badge={activeFilterCount || undefined}
+          label="Фильтры"
+          onClick={() => setFiltersOpen((value) => !value)}
+        >
+          <FilterIcon />
+        </ToolbarButton>
+        <ToolbarButton
+          active={inspectorOpen && inspectorTab === "list"}
+          badge={filteredRecords.length}
+          label="Список"
+          onClick={openList}
+        >
+          <LayersIcon />
+        </ToolbarButton>
+        <ToolbarButton
+          active={inspectorOpen && inspectorTab === "details"}
+          label="Детали"
+          onClick={openDetails}
+          disabled={!selectedRecord}
+        >
+          <InfoIcon />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Подогнать"
+          onClick={() => setFitRequest((value) => value + 1)}
+        >
+          <FocusIcon />
+        </ToolbarButton>
+      </nav>
+
+      {selectedRecord ? (
+        <section className="selection-context panel-chrome">
+          <div className="selection-copy">
+            <p className="eyebrow">Выбрано на карте</p>
+            <h2>{selectedRecord.id}</h2>
+            <p>
+              {selectedRecord.sensor} · {formatDate(selectedRecord.acquiredOn)} · трек {selectedRecord.trackCode}
+            </p>
+          </div>
+          <div className="selection-actions">
+            <button
+              className="button button-ghost"
+              type="button"
+              onClick={openDetails}
+            >
+              <InfoIcon className="button-icon" />
+              Детали
+            </button>
+            <a
+              className="button button-muted"
+              href={`./${encodeURI(selectedRecord.sitePath)}`}
+              download
+            >
+              <DownloadIcon className="button-icon" />
+              KML
+            </a>
+          </div>
+        </section>
+      ) : null}
+
+      <aside className={`drawer drawer-left${filtersOpen ? " is-open" : ""}`}>
+        <div className="drawer-frame panel-chrome">
+          <div className="drawer-header">
+            <div>
+              <p className="eyebrow">Левая панель</p>
+              <h2>Фильтрация</h2>
+            </div>
+            <button
+              className="icon-button"
+              type="button"
+              onClick={() => setFiltersOpen(false)}
+              aria-label="Закрыть фильтры"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+          <Filters
+            filters={filters}
+            options={{ sensors, variants, tracks, batches }}
+            onChange={setFilters}
+            onReset={() => setFilters(DEFAULT_FILTERS)}
+            onFitToSelection={() => setFitRequest((value) => value + 1)}
+            canReset={!isDefaultFilters(filters)}
           />
         </div>
-      </section>
+      </aside>
+
+      <aside className={`drawer drawer-right${inspectorOpen ? " is-open" : ""}`}>
+        <div className="drawer-frame panel-chrome">
+          <div className="drawer-header">
+            <div className="drawer-tabs">
+              <button
+                className={`drawer-tab${inspectorTab === "list" ? " is-active" : ""}`}
+                type="button"
+                onClick={() => setInspectorTab("list")}
+              >
+                <LayersIcon className="drawer-tab-icon" />
+                Сцены
+              </button>
+              <button
+                className={`drawer-tab${inspectorTab === "details" ? " is-active" : ""}`}
+                type="button"
+                onClick={() => setInspectorTab("details")}
+                disabled={!selectedRecord}
+              >
+                <InfoIcon className="drawer-tab-icon" />
+                Детали
+              </button>
+            </div>
+            <button
+              className="icon-button"
+              type="button"
+              onClick={() => setInspectorOpen(false)}
+              aria-label="Закрыть правую панель"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+
+          {inspectorTab === "list" ? (
+            <RecordList
+              records={filteredRecords}
+              selectedId={selectedId}
+              hoveredId={hoveredId}
+              onSelect={(id) => {
+                setSelectedId(id);
+                setInspectorTab("details");
+              }}
+              onHover={setHoveredId}
+            />
+          ) : (
+            <DetailsPanel record={selectedRecord} />
+          )}
+        </div>
+      </aside>
     </main>
   );
 }
-

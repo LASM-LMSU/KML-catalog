@@ -4,6 +4,7 @@ import { LatLngBounds } from "leaflet";
 import type { BBox, CatalogRecord } from "../types";
 
 type CatalogMapProps = {
+  basemap: "light" | "satellite";
   records: CatalogRecord[];
   selectedId: string | null;
   hoveredId: string | null;
@@ -82,12 +83,13 @@ function MapBridge({
     if (bounds) {
       map.flyToBounds(bounds.pad(0.6), { duration: 0.45 });
     }
-  }, [map, records, selectedId]);
+  }, [map, selectedId]);
 
   return null;
 }
 
 export function CatalogMap({
+  basemap,
   records,
   selectedId,
   hoveredId,
@@ -95,71 +97,60 @@ export function CatalogMap({
   onBoundsChange,
   fitRequest,
 }: CatalogMapProps) {
+  const tileConfig =
+    basemap === "satellite"
+      ? {
+          attribution:
+            '&copy; <a href="https://www.esri.com">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community',
+          url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        }
+      : {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        };
+
   return (
-    <section className="panel map-panel">
-      <div className="map-panel-header">
-        <div>
-          <p className="eyebrow">Coverage viewer</p>
-          <h2>Карта охватов</h2>
-        </div>
-        <div className="legend">
-          <span>
-            <i className="legend-swatch legend-swatch-default" />
-            каталог
-          </span>
-          <span>
-            <i className="legend-swatch legend-swatch-hover" />
-            hover
-          </span>
-          <span>
-            <i className="legend-swatch legend-swatch-selected" />
-            выбранный
-          </span>
-        </div>
-      </div>
+    <div className="map-shell">
+      <MapContainer
+        className="map"
+        center={[55.751244, 37.618423]}
+        zoom={2}
+        scrollWheelZoom
+        preferCanvas
+        worldCopyJump
+      >
+        <TileLayer
+          attribution={tileConfig.attribution}
+          url={tileConfig.url}
+        />
+        <MapBridge
+          records={records}
+          selectedId={selectedId}
+          onBoundsChange={onBoundsChange}
+          fitRequest={fitRequest}
+        />
+        {records.map((record) => {
+          const isSelected = record.id === selectedId;
+          const isHovered = record.id === hoveredId;
 
-      <div className="map-shell">
-        <MapContainer
-          className="map"
-          center={[55.751244, 37.618423]}
-          zoom={2}
-          scrollWheelZoom
-          preferCanvas
-          worldCopyJump
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          />
-          <MapBridge
-            records={records}
-            selectedId={selectedId}
-            onBoundsChange={onBoundsChange}
-            fitRequest={fitRequest}
-          />
-          {records.map((record) => {
-            const isSelected = record.id === selectedId;
-            const isHovered = record.id === hoveredId;
-
-            return (
-              <Polygon
-                key={record.id}
-                positions={polygonPositions(record)}
-                pathOptions={{
-                  color: isSelected ? "#e1793c" : isHovered ? "#0c7b6a" : "#1f5d55",
-                  fillColor: isSelected ? "#e1793c" : isHovered ? "#0c7b6a" : "#1f5d55",
-                  fillOpacity: isSelected ? 0.38 : isHovered ? 0.28 : 0.16,
-                  weight: isSelected ? 2.4 : 1.3,
-                }}
-                eventHandlers={{
-                  click: () => onSelect(record.id),
-                }}
-              />
-            );
-          })}
-        </MapContainer>
-      </div>
-    </section>
+          return (
+            <Polygon
+              key={record.id}
+              positions={polygonPositions(record)}
+              pathOptions={{
+                color: isSelected ? "#e1793c" : isHovered ? "#0c7b6a" : "#1f5d55",
+                fillColor: isSelected ? "#e1793c" : isHovered ? "#0c7b6a" : "#1f5d55",
+                fillOpacity: isSelected ? 0.44 : isHovered ? 0.3 : 0.16,
+                weight: isSelected ? 2.7 : 1.25,
+              }}
+              eventHandlers={{
+                click: () => onSelect(record.id),
+              }}
+            />
+          );
+        })}
+      </MapContainer>
+    </div>
   );
 }
-
