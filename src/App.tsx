@@ -4,7 +4,18 @@ import { CatalogMap } from "./components/CatalogMap";
 import { RecordList } from "./components/RecordList";
 import { DetailsPanel } from "./components/DetailsPanel";
 import { Timeline } from "./components/Timeline";
-import { CalendarIcon, CloseIcon, DownloadIcon, FilterIcon, FocusIcon, InfoIcon, LayersIcon, SearchIcon } from "./components/Icons";
+import {
+  CalendarIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  CloseIcon,
+  DownloadIcon,
+  FilterIcon,
+  FocusIcon,
+  InfoIcon,
+  LayersIcon,
+  SearchIcon,
+} from "./components/Icons";
 import { loadCatalog } from "./lib/catalog";
 import { filterRecords, isDefaultFilters } from "./lib/filtering";
 import { formatDate, formatGeneratedAt } from "./lib/format";
@@ -118,6 +129,12 @@ export default function App() {
   const [timelineCollapsed, setTimelineCollapsed] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 760px)").matches : false
   );
+  const [hudCollapsed, setHudCollapsed] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 760px)").matches : false
+  );
+  const [toolbarCollapsed, setToolbarCollapsed] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 760px)").matches : false
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -128,11 +145,15 @@ export default function App() {
     const onChange = (event: MediaQueryListEvent) => {
       if (event.matches) {
         setTimelineCollapsed(true);
+        setHudCollapsed(true);
+        setToolbarCollapsed(true);
       }
     };
 
     if (mediaQuery.matches) {
       setTimelineCollapsed(true);
+      setHudCollapsed(true);
+      setToolbarCollapsed(true);
     }
 
     mediaQuery.addEventListener("change", onChange);
@@ -393,7 +414,9 @@ export default function App() {
   };
 
   return (
-    <main className={`app-shell app-shell-map${timelineCollapsed ? " is-timeline-collapsed" : ""}`}>
+    <main
+      className={`app-shell app-shell-map${timelineCollapsed ? " is-timeline-collapsed" : ""}${hudCollapsed ? " is-hud-collapsed" : ""}${toolbarCollapsed ? " is-toolbar-collapsed" : ""}`}
+    >
       <div className="background-orb background-orb-left" />
       <div className="background-orb background-orb-right" />
 
@@ -445,6 +468,15 @@ export default function App() {
           <span className="hud-pill hud-pill-wide">UTC {formatGeneratedAt(catalog.generatedAt)}</span>
         </div>
       </header>
+      <button
+        className="mobile-panel-toggle mobile-panel-toggle-top panel-chrome"
+        type="button"
+        onClick={() => setHudCollapsed((value) => !value)}
+        aria-label={hudCollapsed ? "Развернуть верхнюю панель" : "Свернуть верхнюю панель"}
+        title={hudCollapsed ? "Развернуть верхнюю панель" : "Свернуть верхнюю панель"}
+      >
+        {hudCollapsed ? <SearchIcon /> : <ChevronUpIcon />}
+      </button>
 
       <nav className="map-toolbar panel-chrome">
         <div className="toolbar-segmented">
@@ -495,6 +527,15 @@ export default function App() {
           <FocusIcon />
         </ToolbarButton>
       </nav>
+      <button
+        className="mobile-panel-toggle mobile-panel-toggle-bottom panel-chrome"
+        type="button"
+        onClick={() => setToolbarCollapsed((value) => !value)}
+        aria-label={toolbarCollapsed ? "Развернуть нижнюю панель" : "Свернуть нижнюю панель"}
+        title={toolbarCollapsed ? "Развернуть нижнюю панель" : "Свернуть нижнюю панель"}
+      >
+        {toolbarCollapsed ? <FilterIcon /> : <ChevronDownIcon />}
+      </button>
 
       {selectedRecord ? (
         <section className="selection-context panel-chrome">

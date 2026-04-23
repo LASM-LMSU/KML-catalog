@@ -130,6 +130,10 @@ button:disabled {
   animation: rise-in 0.5s ease both;
 }
 
+.mobile-panel-toggle {
+  display: none;
+}
+
 .map-shell {
   position: absolute;
   inset: 0;
@@ -1443,6 +1447,53 @@ button:disabled {
     border-radius: 14px;
   }
 
+  .mobile-panel-toggle {
+    position: absolute;
+    z-index: 23;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(22, 32, 29, 0.08);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .mobile-panel-toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .mobile-panel-toggle-top {
+    top: calc(14px + var(--safe-top));
+    right: calc(14px + var(--safe-right));
+  }
+
+  .mobile-panel-toggle-bottom {
+    bottom: calc(82px + var(--safe-bottom));
+    right: calc(14px + var(--safe-right));
+  }
+
+  .hud,
+  .map-toolbar {
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+
+  .app-shell.is-hud-collapsed .hud {
+    transform: translateY(calc(-100% - 14px));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .app-shell.is-toolbar-collapsed .map-toolbar {
+    transform: translateY(calc(100% + 14px));
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .selection-context {
     left: calc(10px + var(--safe-left));
     right: calc(10px + var(--safe-right));
@@ -1560,6 +1611,10 @@ button:disabled {
 
   .app-shell.is-timeline-collapsed .map-toolbar {
     bottom: calc(12px + var(--safe-bottom));
+  }
+
+  .app-shell.is-toolbar-collapsed .selection-context {
+    bottom: calc(92px + var(--safe-bottom));
   }
 
   .app-shell.is-timeline-collapsed .selection-context {
