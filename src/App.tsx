@@ -90,6 +90,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [basemap, setBasemap] = useState<"light" | "satellite">("light");
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [visibleBounds, setVisibleBounds] = useState<BBox | null>(null);
@@ -124,20 +125,21 @@ export default function App() {
 
   const deferredQuery = useDeferredValue(filters.query);
   const effectiveFilters = { ...filters, query: deferredQuery };
-  const filteredRecords = catalog ? filterRecords(catalog.records, effectiveFilters, visibleBounds) : [];
+  const matchedRecords = catalog ? filterRecords(catalog.records, effectiveFilters, visibleBounds) : [];
+  const visibleRecords = matchedRecords.filter((record) => !hiddenIds.has(record.id));
 
   useEffect(() => {
-    if (!filteredRecords.length) {
+    if (!matchedRecords.length) {
       if (selectedId) {
         setSelectedId(null);
       }
       return;
     }
 
-    if (selectedId && !filteredRecords.some((record) => record.id === selectedId)) {
+    if (selectedId && (!matchedRecords.some((record) => record.id === selectedId) || hiddenIds.has(selectedId))) {
       setSelectedId(null);
     }
-  }, [filteredRecords, selectedId]);
+  }, [hiddenIds, matchedRecords, selectedId]);
 
   if (error) {
     return (
@@ -164,7 +166,7 @@ export default function App() {
   }
 
   const selectedRecord =
-    filteredRecords.find((record) => record.id === selectedId) ??
+    visibleRecords.find((record) => record.id === selectedId) ??
     catalog.records.find((record) => record.id === selectedId) ??
     null;
 
@@ -176,6 +178,56 @@ export default function App() {
     label: value === "unspecified" ? "без даты" : value,
   }));
   const activeFilterCount = getActiveFilterCount(filters);
+  const hideMatched = () => {
+    const ids = matchedRecords.map((record) => record.id);
+    setHiddenIds((current) => {
+      const next = new Set(current);
+      ids.forEach((id) => next.add(id));
+      return next;
+    });
+
+    if (selectedId && ids.includes(selectedId)) {
+      setSelectedId(null);
+    }
+  };
+  const showMatched = () => {
+    setHiddenIds((current) => {
+      const next = new Set(current);
+      matchedRecords.forEach((record) => next.delete(record.id));
+      return next;
+    });
+  };
+  const showAllCatalog = () => {
+    setHiddenIds(new Set());
+  };
+  const selectFromList = (id: string) => {
+    setHiddenIds((current) => {
+      if (!current.has(id)) {
+        return current;
+      }
+
+      const next = new Set(current);
+      next.delete(id);
+      return next;
+    });
+
+    setSelectedId(id);
+  };
+  const toggleRecordHidden = (id: string) => {
+    setHiddenIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+
+    if (selectedId === id) {
+      setSelectedId(null);
+    }
+  };
   const closeDrawers = () => {
     setFiltersOpen(false);
     setInspectorOpen(false);
@@ -199,7 +251,7 @@ export default function App() {
 
       <CatalogMap
         basemap={basemap}
-        records={filteredRecords}
+        records={visibleRecords}
         selectedId={selectedId}
         hoveredId={hoveredId}
         onSelect={setSelectedId}
@@ -236,7 +288,7 @@ export default function App() {
         <div className="hud-pills">
           <span className="hud-pill">
             <LayersIcon className="hud-pill-icon" />
-            {filteredRecords.length} / {catalog.total}
+            {visibleRecords.length} видимы · {matchedRecords.length} в выборке
           </span>
           <span className="hud-pill">
             <CalendarIcon className="hud-pill-icon" />
@@ -274,7 +326,7 @@ export default function App() {
         </ToolbarButton>
         <ToolbarButton
           active={inspectorOpen && inspectorTab === "list"}
-          badge={filteredRecords.length}
+          badge={matchedRecords.length}
           label="Список"
           onClick={openList}
         >
@@ -387,14 +439,20 @@ export default function App() {
 
           {inspectorTab === "list" ? (
             <RecordList
-              records={filteredRecords}
+              records={matchedRecords}
+              hiddenIds={hiddenIds}
               selectedId={selectedId}
               hoveredId={hoveredId}
+              visibleCount={visibleRecords.length}
+              onHideAllMatched={hideMatched}
               onSelect={(id) => {
-                setSelectedId(id);
+                selectFromList(id);
                 setInspectorTab("details");
               }}
               onHover={setHoveredId}
+              onShowAllCatalog={showAllCatalog}
+              onShowAllMatched={showMatched}
+              onToggleHidden={toggleRecordHidden}
             />
           ) : (
             <DetailsPanel record={selectedRecord} />

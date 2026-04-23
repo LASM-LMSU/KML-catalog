@@ -111,3 +111,26 @@ export function CalendarIcon(props: IconProps) {
   );
 }
 
+export function EyeIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" />
+      <circle
+        cx="12"
+        cy="12"
+        r="2.8"
+      />
+    </IconBase>
+  );
+}
+
+export function EyeOffIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M3 3l18 18" />
+      <path d="M10.6 6.3A10.3 10.3 0 0 1 12 6c6 0 9.5 6 9.5 6a17.4 17.4 0 0 1-3.1 3.8" />
+      <path d="M6.3 6.4C4 8 2.5 12 2.5 12s3.5 6 9.5 6c1.6 0 3-.3 4.2-.8" />
+      <path d="M9.9 9.8A2.9 2.9 0 0 0 9.2 12c0 1.5 1.3 2.8 2.8 2.8.8 0 1.6-.3 2.1-.9" />
+    </IconBase>
+  );
+}

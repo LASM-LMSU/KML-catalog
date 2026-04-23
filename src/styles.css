@@ -635,6 +635,12 @@ button:disabled {
   gap: 8px;
 }
 
+.button-compact {
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 0.85rem;
+}
+
 .button-accent {
   background: linear-gradient(135deg, var(--accent), #127a66);
   color: white;
@@ -668,6 +674,11 @@ button:disabled {
 .chip-accent {
   background: var(--accent-soft);
   color: var(--accent-strong);
+}
+
+.chip-muted {
+  background: rgba(22, 32, 29, 0.08);
+  color: var(--muted);
 }
 
 .details-grid {
@@ -704,56 +715,132 @@ button:disabled {
   gap: 12px;
 }
 
-.record-card {
-  width: 100%;
-  padding: 16px;
-  text-align: left;
+.list-bulk-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.record-table-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(120px, 0.7fr) minmax(120px, 0.75fr) 56px;
+  gap: 12px;
+  padding: 0 12px 8px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.record-list-compact {
+  gap: 8px;
+}
+
+.record-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 50px;
+  align-items: center;
+  gap: 10px;
   border: 1px solid rgba(22, 32, 29, 0.08);
-  border-radius: 20px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(252, 247, 240, 0.82));
-  cursor: pointer;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(252, 247, 240, 0.78));
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
 }
 
-.record-card:hover,
-.record-card.is-hovered {
-  transform: translateY(-2px);
+.record-row:hover,
+.record-row.is-hovered {
+  transform: translateY(-1px);
   border-color: rgba(14, 102, 85, 0.24);
-  box-shadow: 0 12px 28px rgba(22, 32, 29, 0.08);
+  box-shadow: 0 10px 24px rgba(22, 32, 29, 0.08);
 }
 
-.record-card.is-selected {
+.record-row.is-selected {
   border-color: rgba(225, 121, 60, 0.34);
-  box-shadow: 0 14px 30px rgba(225, 121, 60, 0.12);
+  box-shadow: 0 12px 26px rgba(225, 121, 60, 0.12);
 }
 
-.record-card h3 {
-  margin: 14px 0 10px;
-  font-size: 1rem;
-  line-height: 1.22;
+.record-row.is-hidden {
+  opacity: 0.72;
+}
+
+.record-row-main {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(120px, 0.7fr) minmax(120px, 0.75fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.record-row-id {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.record-row-id strong {
+  line-height: 1.2;
   word-break: break-word;
 }
 
-.record-meta {
-  display: grid;
-  gap: 10px;
-  margin: 0;
+.record-row-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.record-meta div {
+.record-row-cell {
   display: grid;
   gap: 2px;
 }
 
-.record-meta dt {
-  color: var(--muted);
-  font-size: 0.76rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.record-row-cell strong {
+  font-size: 0.9rem;
 }
 
-.record-meta dd {
-  margin: 0;
+.record-row-cell span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.record-row-actions {
+  display: flex;
+  justify-content: center;
+  padding-right: 10px;
+}
+
+.inline-toggle {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid rgba(22, 32, 29, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--accent-strong);
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.inline-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.inline-toggle.is-off {
+  color: var(--muted);
+  background: rgba(22, 32, 29, 0.06);
+}
+
+.inline-toggle svg {
+  width: 16px;
+  height: 16px;
 }
 
 .loading-panel,
@@ -915,6 +1002,24 @@ button:disabled {
   .filters-grid-tight,
   .detail-row {
     grid-template-columns: 1fr;
+  }
+
+  .record-table-head {
+    display: none;
+  }
+
+  .record-row,
+  .record-row-main {
+    grid-template-columns: 1fr;
+  }
+
+  .record-row {
+    padding: 0 0 8px;
+  }
+
+  .record-row-actions {
+    justify-content: flex-end;
+    padding-right: 12px;
   }
 
   .filters-actions,
