@@ -270,7 +270,7 @@ export default function App() {
         <div className="hud-brand">
           <div className="brand-badge">K</div>
           <div className="brand-copy">
-            <strong>Каталог снимков ЛАС МГУ</strong>
+            <strong>Каталог снимков ЛАКМ МГУ</strong>
             <span>Статический archive-first интерфейс поверх KML-охватов</span>
           </div>
         </div>
