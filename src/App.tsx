@@ -115,7 +115,29 @@ export default function App() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [inspectorTab, setInspectorTab] = useState<"list" | "details">("list");
-  const [timelineCollapsed, setTimelineCollapsed] = useState(false);
+  const [timelineCollapsed, setTimelineCollapsed] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 760px)").matches : false
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(max-width: 760px)");
+    const onChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setTimelineCollapsed(true);
+      }
+    };
+
+    if (mediaQuery.matches) {
+      setTimelineCollapsed(true);
+    }
+
+    mediaQuery.addEventListener("change", onChange);
+    return () => mediaQuery.removeEventListener("change", onChange);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
