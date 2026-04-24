@@ -126,6 +126,7 @@ export default function App() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [inspectorTab, setInspectorTab] = useState<"list" | "details">("list");
+  const [selectionCollapsed, setSelectionCollapsed] = useState(false);
   const [timelineCollapsed, setTimelineCollapsed] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 760px)").matches : false
   );
@@ -241,6 +242,10 @@ export default function App() {
     }
   }, [hiddenIds, matchedRecords, selectedId]);
 
+  useEffect(() => {
+    setSelectionCollapsed(false);
+  }, [selectedId]);
+
   if (error) {
     return (
       <main className="app-shell">
@@ -269,6 +274,10 @@ export default function App() {
     visibleRecords.find((record) => record.id === selectedId) ??
     catalog.records.find((record) => record.id === selectedId) ??
     null;
+  const selectionToggleLabel = selectionCollapsed
+    ? "Развернуть карточку выбранного слоя"
+    : "Свернуть карточку выбранного слоя";
+  const SelectionToggleIcon = selectionCollapsed ? ChevronUpIcon : ChevronDownIcon;
 
   const sensors = unique(catalog.records.map((record) => record.sensor));
   const variants = unique(catalog.records.map((record) => record.variant));
@@ -562,7 +571,17 @@ export default function App() {
       </button>
 
       {selectedRecord ? (
-        <section className="selection-context panel-chrome">
+        <section className={`selection-context panel-chrome${selectionCollapsed ? " is-collapsed" : ""}`}>
+          <button
+            className="selection-context-control"
+            type="button"
+            onClick={() => setSelectionCollapsed((current) => !current)}
+            aria-label={selectionToggleLabel}
+            aria-expanded={!selectionCollapsed}
+            title={selectionToggleLabel}
+          >
+            <SelectionToggleIcon />
+          </button>
           <div className="selection-copy">
             <p className="eyebrow">Выбрано на карте</p>
             <h2>{selectedRecord.id}</h2>
@@ -570,24 +589,26 @@ export default function App() {
               {selectedRecord.sensor} · {formatDate(selectedRecord.acquiredOn)} · трек {selectedRecord.trackCode}
             </p>
           </div>
-          <div className="selection-actions">
-            <button
-              className="button button-ghost"
-              type="button"
-              onClick={openDetails}
-            >
-              <InfoIcon className="button-icon" />
-              Детали
-            </button>
-            <a
-              className="button button-muted"
-              href={`./${encodeURI(selectedRecord.sitePath)}`}
-              download
-            >
-              <DownloadIcon className="button-icon" />
-              KML
-            </a>
-          </div>
+          {!selectionCollapsed ? (
+            <div className="selection-actions">
+              <button
+                className="button button-ghost"
+                type="button"
+                onClick={openDetails}
+              >
+                <InfoIcon className="button-icon" />
+                Детали
+              </button>
+              <a
+                className="button button-muted"
+                href={`./${encodeURI(selectedRecord.sitePath)}`}
+                download
+              >
+                <DownloadIcon className="button-icon" />
+                KML
+              </a>
+            </div>
+          ) : null}
         </section>
       ) : null}
 

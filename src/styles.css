@@ -380,7 +380,39 @@ button:disabled {
   gap: 16px;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 16px;
+  padding: 16px 58px 16px 16px;
+}
+
+.selection-context.is-collapsed {
+  right: auto;
+  width: min(360px, calc(100vw - 40px));
+  gap: 0;
+  align-items: stretch;
+}
+
+.selection-context-control,
+.timeline-panel-control {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(22, 32, 29, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text);
+  cursor: pointer;
+  z-index: 2;
+  touch-action: manipulation;
+}
+
+.selection-context-control svg,
+.timeline-panel-control svg {
+  width: 16px;
+  height: 16px;
 }
 
 .selection-copy {
@@ -398,6 +430,25 @@ button:disabled {
   margin: 8px 0 0;
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.selection-context.is-collapsed .selection-copy .eyebrow {
+  display: none;
+}
+
+.selection-context.is-collapsed .selection-copy h2 {
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.selection-context.is-collapsed .selection-copy p:last-child {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .selection-actions {
@@ -420,29 +471,7 @@ button:disabled {
 }
 
 .timeline-panel.is-collapsed {
-  padding: 8px 52px 8px 10px;
-}
-
-.timeline-panel-control {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(22, 32, 29, 0.08);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.8);
-  color: var(--text);
-  cursor: pointer;
-  z-index: 2;
-}
-
-.timeline-panel-control svg {
-  width: 16px;
-  height: 16px;
+  padding: 8px 10px;
 }
 
 .timeline-layout {
@@ -496,9 +525,38 @@ button:disabled {
   height: 15px;
 }
 
+.timeline-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(22, 32, 29, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.timeline-toggle svg {
+  width: 15px;
+  height: 15px;
+}
+
+.timeline-toggle-inline {
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 40px;
+  padding-inline: 12px;
+}
+
 .timeline-collapsed-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
 }
@@ -1504,6 +1562,13 @@ button:disabled {
     width: auto;
     flex-direction: column;
     align-items: stretch;
+    padding: 14px 50px 12px 12px;
+  }
+
+  .selection-context.is-collapsed {
+    right: auto;
+    width: min(308px, calc(100vw - 24px));
+    padding: 12px 48px 12px 12px;
   }
 
   .timeline-panel {
@@ -1520,9 +1585,10 @@ button:disabled {
   }
 
   .timeline-panel.is-collapsed {
-    padding: 8px 48px 8px 10px;
+    padding: 8px 10px;
   }
 
+  .selection-context-control,
   .timeline-panel-control {
     top: 10px;
     right: 10px;
@@ -1613,8 +1679,12 @@ button:disabled {
   }
 
   .timeline-collapsed-row {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 8px;
+  }
+
+  .timeline-toggle-inline {
+    min-height: 42px;
   }
 
   .app-shell.is-timeline-collapsed .map-toolbar {
