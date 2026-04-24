@@ -398,16 +398,18 @@ export function Timeline({
   if (collapsed) {
     return (
       <section className="timeline-panel panel-chrome is-collapsed">
-        <button
-          className="timeline-panel-control"
-          type="button"
-          onClick={onToggleCollapsed}
-          aria-label={toggleLabel}
-          title={toggleLabel}
-        >
-          <ToggleIcon />
-        </button>
         <div className="timeline-collapsed-row">
+          <button
+            className="timeline-toggle timeline-toggle-inline"
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-label={toggleLabel}
+            aria-expanded={!collapsed}
+            title={toggleLabel}
+          >
+            <ToggleIcon />
+            <span>Таймлайн</span>
+          </button>
           <div className="timeline-scale timeline-scale-collapsed">
             <div
               className={`timeline-bars${hasTimeFilter ? " has-time-filter" : ""}`}
@@ -481,6 +483,7 @@ export function Timeline({
         type="button"
         onClick={onToggleCollapsed}
         aria-label={toggleLabel}
+        aria-expanded={!collapsed}
         title={toggleLabel}
       >
         <ToggleIcon />
